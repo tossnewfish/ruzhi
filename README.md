@@ -34,6 +34,8 @@ docker compose -p onboarding-demo ps
 http://localhost:8080
 ```
 
+打开这个地址会看到一个简单页面，可以直接创建、查询和支付订单。
+
 ## 过一遍接口
 
 创建订单：

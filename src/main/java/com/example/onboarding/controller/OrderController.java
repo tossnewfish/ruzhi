@@ -3,7 +3,6 @@ package com.example.onboarding.controller;
 import com.example.onboarding.dto.CreateOrderRequest;
 import com.example.onboarding.dto.OrderResponse;
 import com.example.onboarding.service.OrderService;
-import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,7 +24,7 @@ public class OrderController {
     }
 
     @PostMapping
-    public OrderResponse create(@Valid @RequestBody CreateOrderRequest request) {
+    public OrderResponse create(@RequestBody CreateOrderRequest request) {
         return orderService.createOrder(request);
     }
 

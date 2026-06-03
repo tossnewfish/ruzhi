@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>订单练习项目</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, "Microsoft YaHei", sans-serif;
+            background: #f6f7f9;
+            color: #222;
+        }
+
+        main {
+            max-width: 900px;
+            margin: 32px auto;
+            padding: 0 18px;
+        }
+
+        h1 {
+            margin-bottom: 6px;
+            font-size: 28px;
+        }
+
+        .note {
+            margin: 0 0 22px;
+            color: #666;
+        }
+
+        .panel {
+            margin-bottom: 16px;
+            padding: 18px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: #fff;
+        }
+
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: end;
+        }
+
+        label {
+            display: grid;
+            gap: 6px;
+            min-width: 180px;
+            font-size: 14px;
+            color: #444;
+        }
+
+        input {
+            height: 36px;
+            padding: 0 10px;
+            border: 1px solid #bbb;
+            border-radius: 4px;
+            font-size: 15px;
+        }
+
+        button {
+            height: 38px;
+            padding: 0 14px;
+            border: 1px solid #333;
+            border-radius: 4px;
+            background: #222;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        button.secondary {
+            background: #fff;
+            color: #222;
+        }
+
+        pre {
+            min-height: 180px;
+            padding: 14px;
+            border-radius: 6px;
+            overflow: auto;
+            background: #1f2328;
+            color: #d6e2ff;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+<main>
+    <h1>订单练习项目</h1>
+    <p class="note">用这个页面简单过一下 MVC、MyBatis、Redis 缓存、Redis 分布式锁和 RocketMQ。</p>
+
+    <section class="panel">
+        <h2>创建订单</h2>
+        <div class="row">
+            <label>
+                商品名
+                <input id="productName" value="Docker Test Book">
+            </label>
+            <label>
+                金额
+                <input id="amount" value="88.80">
+            </label>
+            <button onclick="createOrder()">创建</button>
+        </div>
+    </section>
+
+    <section class="panel">
+        <h2>查询/支付</h2>
+        <div class="row">
+            <label>
+                订单 ID
+                <input id="orderId" value="1">
+            </label>
+            <button class="secondary" onclick="getOrder()">查询订单</button>
+            <button class="secondary" onclick="listOrders()">最近订单</button>
+            <button onclick="payOrder()">支付订单</button>
+        </div>
+    </section>
+
+    <section class="panel">
+        <h2>接口结果</h2>
+        <pre id="result">点击上面的按钮查看接口返回。</pre>
+    </section>
+</main>
+
+<script>
+    const result = document.getElementById("result");
+    const orderIdInput = document.getElementById("orderId");
+
+    async function request(url, options) {
+        result.textContent = "请求中...";
+        try {
+            const response = await fetch(url, options);
+            const text = await response.text();
+            const data = text ? JSON.parse(text) : {};
+            result.textContent = JSON.stringify(data, null, 2);
+            return data;
+        } catch (error) {
+            result.textContent = error.message;
+            return null;
+        }
+    }
+
+    async function createOrder() {
+        const data = await request("/api/orders", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                productName: document.getElementById("productName").value,
+                amount: document.getElementById("amount").value
+            })
+        });
+        if (data && data.id) {
+            orderIdInput.value = data.id;
+        }
+    }
+
+    function getOrder() {
+        return request(`/api/orders/${orderIdInput.value}`);
+    }
+
+    function listOrders() {
+        return request("/api/orders?limit=10");
+    }
+
+    function payOrder() {
+        return request(`/api/orders/${orderIdInput.value}/pay`, {method: "POST"});
+    }
+</script>
+</body>
+</html>

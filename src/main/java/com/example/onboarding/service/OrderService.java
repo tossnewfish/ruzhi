@@ -10,6 +10,7 @@ import com.example.onboarding.mq.OrderEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
@@ -36,6 +37,8 @@ public class OrderService {
 
     @Transactional
     public OrderResponse createOrder(CreateOrderRequest request) {
+        checkCreateRequest(request);
+
         String lockKey = "lock:order:create:" + request.productName();
         RedisDistributedLock.LockToken lockToken = distributedLock
                 .tryLock(lockKey, Duration.ofSeconds(5))
@@ -80,7 +83,7 @@ public class OrderService {
     public OrderResponse payOrder(Long id) {
         int updated = orderMapper.updateStatus(id, OrderStatus.PAID);
         if (updated == 0) {
-            throw new OrderNotFoundException(id);
+            throw new IllegalArgumentException("order not found: " + id);
         }
         orderCacheService.removeOrder(id);
         OrderResponse response = loadOrderFromDatabase(id);
@@ -92,8 +95,17 @@ public class OrderService {
     private OrderResponse loadOrderFromDatabase(Long id) {
         OrderRecord order = orderMapper.selectById(id);
         if (order == null) {
-            throw new OrderNotFoundException(id);
+            throw new IllegalArgumentException("order not found: " + id);
         }
         return OrderResponse.from(order);
+    }
+
+    private void checkCreateRequest(CreateOrderRequest request) {
+        if (request.productName() == null || request.productName().isBlank()) {
+            throw new IllegalArgumentException("productName is required");
+        }
+        if (request.amount() == null || request.amount().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("amount must be greater than 0");
+        }
     }
 }
