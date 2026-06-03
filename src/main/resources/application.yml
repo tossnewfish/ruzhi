@@ -1,0 +1,36 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: onboarding-practice
+  datasource:
+    url: jdbc:mysql://localhost:3306/onboarding?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: root
+  sql:
+    init:
+      mode: always
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 1s
+
+logging:
+  level:
+    com.example.onboarding: INFO
+
+app:
+  rocketmq:
+    enabled: false
+    namesrv-addr: 127.0.0.1:9876
+    producer-group: onboarding-order-producer
+    consumer-group: onboarding-order-consumer
+    order-topic: onboarding-order-topic
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
